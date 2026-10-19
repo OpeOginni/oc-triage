@@ -1,6 +1,6 @@
 {
   "name": "oc-triage",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Diagnose and fix broken OpenCode installs (desktop app and TUI) with an OpenCode agent running on free models.",
   "type": "module",
   "bin": {
