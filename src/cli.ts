@@ -75,7 +75,10 @@ const paths = opencodePaths(userEnv)
 
 say("Looking for OpenCode on this computer…")
 const opencodes = findOpencodes(paths)
-for (const o of opencodes) say(`  ${o.ok ? `v${o.version}` : "broken"}  ${o.file}  (${o.source})`)
+// The desktop app keeps a copy per update; list those on one line unless they're broken.
+const staged = opencodes.filter((o) => o.source === "desktop app's staged copy" && o.ok)
+for (const o of opencodes.filter((o) => !staged.includes(o))) say(`  ${o.ok ? `v${o.version}` : "broken"}  ${o.file}  (${o.source})`)
+if (staged.length) say(`  + ${staged.length} older copies kept by the desktop app`)
 if (!opencodes.length) say("  No OpenCode CLI found.")
 
 // oc-triage's own folder: the harness runs with private config, data and state so a broken
@@ -240,12 +243,12 @@ if (harness) {
 
 const contextFile = path.join(sessionDir, "context.md")
 const context = buildContext({
-    version,
-    paths,
-    opencodes,
-    harness: harness ?? { file: "(none: --print)", version: "-" },
-    model: modelNote,
-    session: { dir: sessionDir, backups, wrapper, userEnv },
+  version,
+  paths,
+  opencodes,
+  harness: harness ?? { file: "(none: --print)", version: "-" },
+  model: modelNote,
+  session: { dir: sessionDir, backups, wrapper, userEnv },
 })
 fs.writeFileSync(contextFile, context)
 
@@ -305,6 +308,7 @@ say("Starting OpenCode triage. Tip: drag a screenshot into the window to show wh
 // Ctrl+C belongs to the TUI; keep this process alive so the cleanup below still runs.
 for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(signal, () => {})
 const child = spawnSync(harness.file, ["--standalone", "--prompt", kickoff, sessionDir], {
+  cwd: sessionDir,
   env: harnessEnv,
   stdio: "inherit",
   windowsHide: false,
@@ -315,7 +319,9 @@ try {
   fs.copyFileSync(path.join(sandboxData, "log", "opencode.log"), sessionLog)
 } catch {}
 fs.rmSync(sandboxData, { recursive: true, force: true })
-if (child.error || child.status !== 0) {
+// Quitting with Ctrl+C (exit 130) or closing the terminal is a normal way out, not a crash.
+const quit = child.status === 0 || child.status === 130 || child.status === 143 || ["SIGINT", "SIGTERM", "SIGHUP"].includes(child.signal ?? "")
+if (child.error || !quit) {
   printErrorReport({
     title: `the triage session ended with ${child.error ? child.error.message : child.signal ? `signal ${child.signal}` : `exit code ${child.status}`}`,
     facts: [...machineFacts(version), `- OpenCode used: ${harness.file} v${harness.version}`],
@@ -324,4 +330,4 @@ if (child.error || child.status !== 0) {
   })
 }
 console.log(`\nTriage notes and backups are in ${sessionDir}`)
-process.exit(child.status ?? 1)
+process.exit(quit && !child.error ? 0 : (child.status ?? 1))
