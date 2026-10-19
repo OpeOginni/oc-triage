@@ -1,0 +1,11 @@
+# Source and build config: only dist/, PLAYBOOK.md and README.md are published
+src
+tsconfig.json
+tsup.config.ts
+node_modules
+package-lock.json
+*.map
+*.log
+.DS_Store
+.env*
+.oc-triage

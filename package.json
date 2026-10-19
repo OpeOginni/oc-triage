@@ -1,0 +1,32 @@
+{
+  "name": "oc-triage",
+  "version": "0.1.0",
+  "description": "Diagnose and fix broken OpenCode installs (desktop app and TUI) with an OpenCode agent running on free models.",
+  "type": "module",
+  "bin": {
+    "oc-triage": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc",
+    "pack:check": "npm pack --dry-run",
+    "release": "npm publish --access public",
+    "prepublishOnly": "npm run typecheck && npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "opencode",
+    "triage",
+    "debug",
+    "doctor"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2"
+  }
+}
