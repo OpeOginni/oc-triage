@@ -177,7 +177,7 @@ if (!args.print) {
       facts: [
         ...machineFacts(version),
         "- OpenCode binaries found:",
-        ...(opencodes.length ? opencodes.map((o) => `  - ${o.file} (${o.source}): ${o.ok ? `v${o.version}` : "broken"}`) : ["  - none"]),
+        ...(opencodes.length ? opencodes.map((o) => `  - ${o.file} (${o.source}): ${o.ok ? `v${o.version}` : `BROKEN: ${o.error}`}`) : ["  - none"]),
       ],
       sections: failures,
       saveTo: errorReport,
